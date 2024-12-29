@@ -1,6 +1,12 @@
 const AppError = require('./../utils/appError');
 
 // Handle Mongoose CastError (invalid ObjectId)
+const handleJWTError = () =>
+	new AppError('invalid token ,please log in again', 401);
+
+const handleTokenExpiredError = (err) =>
+	new AppError('expired token ,please log in again', 401);
+
 const handleCastErrorDB = (err) => {
 	const message = `Invalid ${err.path}: ${err.value}.`;
 	return new AppError(message, 400);
@@ -71,6 +77,10 @@ module.exports = (err, req, res, next) => {
 			error = handleDuplicateFieldsDB(error);
 		if (err.name === 'ValidationError')
 			error = handleValidationErrorDB(error);
+		if (err.name === 'JsonWebTokenError')
+			error = handleJWTError(error);
+		if (err.name === 'TokenExpiredError')
+			error = handleTokenExpiredError();
 		sendErrorProd(error, res);
 	}
 };
